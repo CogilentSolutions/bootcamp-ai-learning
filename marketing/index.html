@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Derive/ — Learn the Mathematics Behind AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ──────────────────────────────────────────────────── */
+:root {
+  --paper:    #F0F2F5;
+  --white:    #FFFFFF;
+  --parchment:#EDE9E0;
+  --rule:     #D8DCE5;
+  --ink:      #1B2340;
+  --ink-mid:  #3D4B6E;
+  --ink-dim:  #7B89A8;
+  --blue:     #2D5BE3;
+  --blue-lt:  #5580F0;
+  --blue-bg:  #EEF2FD;
+  --yellow:   #F0C93A;
+  --yellow-bg:#FEFAEC;
+  --green:    #1A9E6A;
+
+  --serif: 'Lora', Georgia, serif;
+  --sans:  'Inter', system-ui, sans-serif;
+  --mono:  'JetBrains Mono', monospace;
+}
+
+/* ─── BASE ────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.65;
+  overflow-x: hidden;
+}
+
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; border: none; background: none; font: inherit; color: inherit; }
+
+/* ─── NAV ─────────────────────────────────────────────────────── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 900;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 48px;
+  background: rgba(240,242,245,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--rule);
+  justify-content: space-between;
+}
+.nav-logo {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.nav-logo sup {
+  font-size: 11px;
+  color: var(--blue);
+  font-family: var(--sans);
+  font-weight: 500;
+  vertical-align: super;
+  margin-left: 1px;
+}
+.nav-links {
+  display: flex;
+  gap: 36px;
+  list-style: none;
+}
+.nav-links a {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-dim);
+  transition: color 0.18s;
+}
+.nav-links a:hover { color: var(--ink); }
+.btn-nav {
+  padding: 8px 22px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: background 0.18s;
+}
+.btn-nav:hover { background: var(--blue-lt); }
+
+/* ─── HERO ────────────────────────────────────────────────────── */
+.hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding-top: 60px;
+}
+
+.hero-left {
+  padding: 80px 56px 80px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-right: 1px solid var(--rule);
+  position: relative;
+}
+
+.hero-left::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--rule) 1px, transparent 1px),
+    linear-gradient(90deg, var(--rule) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.hero-left-inner { position: relative; }
+
+.hero-kicker {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--blue);
+  letter-spacing: 0.04em;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hero-kicker::before {
+  content: '';
+  display: inline-block;
+  width: 24px;
+  height: 1px;
+  background: var(--blue);
+}
+
+.hero-headline {
+  font-family: var(--serif);
+  font-size: clamp(44px, 4.5vw, 68px);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin-bottom: 28px;
+  font-weight: 500;
+}
+
+.hero-body {
+  font-size: 17px;
+  line-height: 1.75;
+  color: var(--ink-mid);
+  max-width: 440px;
+  margin-bottom: 44px;
+  font-weight: 400;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 28px;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: background 0.18s, transform 0.12s;
+}
+.btn-primary:hover { background: var(--ink-mid); transform: translateY(-1px); }
+
+.price-inline {
+  font-family: var(--serif);
+  font-size: 15px;
+  color: var(--ink-mid);
+}
+.price-inline strong {
+  font-size: 22px;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.hero-right {
+  background: var(--white);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 80px 56px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-right::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent,
+    transparent 39px,
+    rgba(45, 91, 227, 0.06) 39px,
+    rgba(45, 91, 227, 0.06) 40px
+  );
+  pointer-events: none;
+}
+
+.formula-stage { position: relative; }
+
+.fs-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-dim);
+  letter-spacing: 0.06em;
+  margin-bottom: 16px;
+  font-family: var(--sans);
+}
+
+.fs-formula {
+  font-family: var(--mono);
+  font-size: clamp(20px, 2.2vw, 30px);
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  line-height: 1.6;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+  transition: opacity 0.35s ease;
+  font-weight: 400;
+}
+
+.fs-formula mark {
+  background: var(--yellow);
+  color: var(--ink);
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+
+.fs-annotation {
+  padding: 16px 20px;
+  background: var(--blue-bg);
+  border-left: 3px solid var(--blue);
+  border-radius: 0 6px 6px 0;
+  font-size: 14px;
+  color: var(--ink-mid);
+  line-height: 1.65;
+  margin-bottom: 28px;
+  min-height: 72px;
+  transition: opacity 0.35s ease;
+}
+
+.fs-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fs-pip {
+  width: 28px; height: 3px;
+  background: var(--rule);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.2s, width 0.2s;
+}
+.fs-pip.active { background: var(--blue); width: 44px; }
+.fs-counter {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--ink-dim);
+  font-family: var(--mono);
+}
+
+.margin-note {
+  position: absolute;
+  right: -8px;
+  top: 20px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--blue);
+  opacity: 0.7;
+  transform: rotate(2deg);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ─── SECTION SHARED ──────────────────────────────────────────── */
+.section { padding: 96px 48px; }
+.section-inner { max-width: 1160px; margin: 0 auto; }
+
+.section-heading {
+  font-family: var(--serif);
+  font-size: clamp(32px, 3.2vw, 48px);
+  font-weight: 500;
+  line-height: 1.18;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin-bottom: 16px;
+}
+.section-sub {
+  font-size: 16px;
+  color: var(--ink-mid);
+  line-height: 1.75;
+  max-width: 520px;
+}
+
+/* ─── TRANSFORMATION ──────────────────────────────────────────── */
+.transform-section {
+  background: var(--white);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+.transform-header { margin-bottom: 60px; }
+
+/* ─── HOW WE TEACH ────────────────────────────────────────────── */
+.teach-section { background: var(--paper); }
+
+.teach-grid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 64px;
+  align-items: start;
+}
+
+.teach-modules { display: flex; flex-direction: column; gap: 2px; }
+
+.tm-item {
+  padding: 16px 18px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.18s;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.tm-item:hover { background: var(--white); border-color: var(--rule); }
+.tm-item.active { background: var(--white); border-color: var(--blue); }
+
+.tm-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-dim);
+  width: 20px;
+  flex-shrink: 0;
+}
+.tm-item.active .tm-num { color: var(--blue); }
+.tm-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-mid);
+}
+.tm-item.active .tm-name { color: var(--ink); }
+
+.derivation-panel {
+  background: var(--white);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.dp-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.dp-title { font-size: 13px; font-weight: 600; color: var(--ink); }
+.dp-badge {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--blue);
+  background: var(--blue-bg);
+  padding: 3px 10px;
+  border-radius: 100px;
+}
+
+.dp-steps { padding: 8px 0; }
+
+.dp-step {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 0;
+  border-bottom: 1px solid var(--rule);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+.dp-step:last-child { border-bottom: none; }
+.dp-step.in { opacity: 1; transform: none; }
+
+.dp-step-num {
+  padding: 20px 0 20px 24px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-dim);
+  font-weight: 500;
+}
+
+.dp-step-body { padding: 20px 24px 20px 0; }
+.dp-step-title { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+
+.dp-eq {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--blue);
+  background: var(--blue-bg);
+  padding: 9px 14px;
+  border-radius: 5px;
+  margin: 8px 0;
+  line-height: 1.5;
+  display: inline-block;
+}
+
+.dp-step-body p { font-size: 13px; color: var(--ink-mid); line-height: 1.65; margin-top: 6px; }
+
+/* ─── CURRICULUM ─────────────────────────────────────────────── */
+.curriculum-section {
+  background: var(--white);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+
+.curriculum-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  margin-bottom: 56px;
+  align-items: end;
+}
+
+.module-table { width: 100%; border-collapse: collapse; }
+.module-table thead tr { border-bottom: 2px solid var(--ink); }
+.module-table thead th {
+  font-size: 11px; font-weight: 600; color: var(--ink-dim);
+  letter-spacing: 0.06em; padding: 0 0 12px; text-align: left;
+}
+.module-table thead th:not(:first-child) { padding-left: 20px; }
+.module-table tbody tr { border-bottom: 1px solid var(--rule); transition: background 0.15s; }
+.module-table tbody tr:hover { background: var(--paper); }
+.module-table tbody tr:last-child { border-bottom: none; }
+.module-table td { padding: 18px 0; font-size: 14px; color: var(--ink-mid); vertical-align: top; }
+.module-table td:not(:first-child) { padding-left: 20px; }
+.td-num { font-family: var(--mono); font-size: 12px; color: var(--ink-dim); width: 32px; }
+.td-name { font-weight: 600; color: var(--ink); font-size: 14px; }
+.td-formula { font-family: var(--mono); font-size: 12px; color: var(--blue); }
+.td-topics { font-size: 12px; color: var(--ink-dim); line-height: 1.6; }
+
+/* ─── COMMITMENT ─────────────────────────────────────────────── */
+.commitment-section { background: var(--parchment); }
+.commitment-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 52px;
+}
+.commitment-item { background: var(--white); padding: 36px 32px; }
+.ci-icon { font-size: 22px; margin-bottom: 18px; }
+.ci-heading { font-family: var(--serif); font-size: 18px; font-weight: 500; color: var(--ink); margin-bottom: 12px; line-height: 1.3; }
+.ci-body { font-size: 14px; color: var(--ink-mid); line-height: 1.7; }
+
+/* ─── PRICING ─────────────────────────────────────────────────── */
+.pricing-section { background: var(--paper); }
+.pricing-grid {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 80px;
+  align-items: center;
+  margin-top: 52px;
+}
+
+.comparisons { display: flex; flex-direction: column; }
+.comparison-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 0; border-bottom: 1px solid var(--rule); font-size: 14px;
+}
+.comparison-row:first-child { border-top: 1px solid var(--rule); }
+.cr-name { color: var(--ink-mid); }
+.cr-price { font-weight: 600; color: var(--ink-dim); font-family: var(--mono); font-size: 13px; }
+.comparison-row.ours .cr-name { color: var(--ink); font-weight: 600; }
+.comparison-row.ours .cr-price { color: var(--green); }
+
+.pricing-card {
+  background: var(--ink);
+  color: #fff;
+  border-radius: 12px;
+  padding: 44px 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.pricing-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+}
+
+.pc-inner { position: relative; }
+
+.pc-launch {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.5);
+  margin-bottom: 24px; letter-spacing: 0.04em;
+}
+.pc-launch::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green); display: inline-block;
+}
+
+.pc-price {
+  font-family: var(--serif); font-size: 88px; font-weight: 400;
+  color: #fff; line-height: 1; letter-spacing: -0.04em; margin-bottom: 4px;
+}
+.pc-price span { font-size: 28px; vertical-align: super; margin-right: 4px; color: rgba(255,255,255,0.6); }
+
+.pc-was { font-size: 13px; color: rgba(255,255,255,0.35); margin-bottom: 24px; }
+.pc-was s { text-decoration: line-through; }
+
+.pc-desc { font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.65; margin-bottom: 32px; }
+
+.pc-features { display: flex; flex-direction: column; gap: 12px; margin-bottom: 36px; }
+.pc-feat { display: flex; gap: 12px; font-size: 14px; color: rgba(255,255,255,0.75); align-items: flex-start; }
+.pc-feat-check { color: var(--green); font-size: 13px; flex-shrink: 0; margin-top: 2px; font-weight: 700; }
+
+.btn-enroll {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; padding: 14px;
+  background: var(--yellow); color: var(--ink);
+  border-radius: 6px; font-weight: 700; font-size: 15px;
+  letter-spacing: 0.01em; transition: background 0.18s, transform 0.1s;
+}
+.btn-enroll:hover { background: #f5d060; transform: translateY(-1px); }
+
+.pc-guarantee { text-align: center; font-size: 12px; color: rgba(255,255,255,0.3); margin-top: 14px; }
+
+/* ─── FAQ ────────────────────────────────────────────────────── */
+.faq-section { background: var(--white); border-top: 1px solid var(--rule); }
+.faq-cols {
+  display: grid; grid-template-columns: 280px 1fr;
+  gap: 80px; align-items: start;
+}
+.faq-col-head { position: sticky; top: 80px; }
+.faq-list { display: flex; flex-direction: column; }
+.faq-item { border-bottom: 1px solid var(--rule); overflow: hidden; }
+.faq-item:first-child { border-top: 1px solid var(--rule); }
+.faq-q {
+  width: 100%; text-align: left; padding: 22px 0;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 20px; font-size: 15px; font-weight: 500; color: var(--ink);
+}
+.faq-q:hover { color: var(--blue); }
+.faq-icon {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 1px solid var(--rule); display: flex; align-items: center;
+  justify-content: center; font-size: 14px; color: var(--ink-dim);
+  flex-shrink: 0; transition: transform 0.3s, border-color 0.2s;
+}
+.faq-item.open .faq-icon { transform: rotate(45deg); border-color: var(--blue); color: var(--blue); }
+.faq-a { max-height: 0; overflow: hidden; transition: max-height 0.38s ease; }
+.faq-item.open .faq-a { max-height: 260px; }
+.faq-a-body { padding: 0 0 22px; font-size: 14px; color: var(--ink-mid); line-height: 1.75; max-width: 560px; }
+
+/* ─── FINAL CTA ──────────────────────────────────────────────── */
+.final-section {
+  background: var(--ink); padding: 120px 48px;
+  text-align: center; position: relative; overflow: hidden;
+}
+.final-section::before {
+  content: ''; position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 40px 40px; pointer-events: none;
+}
+.final-inner { position: relative; max-width: 640px; margin: 0 auto; }
+.final-h {
+  font-family: var(--serif); font-size: clamp(40px, 4.5vw, 60px);
+  font-weight: 500; color: #fff; line-height: 1.15;
+  letter-spacing: -0.03em; margin-bottom: 20px;
+}
+.final-p { font-size: 17px; color: rgba(255,255,255,0.55); line-height: 1.7; margin-bottom: 44px; }
+.final-btns { display: flex; gap: 16px; justify-content: center; align-items: center; }
+.btn-final {
+  padding: 14px 32px; background: var(--yellow); color: var(--ink);
+  border-radius: 6px; font-size: 15px; font-weight: 700; transition: background 0.18s;
+}
+.btn-final:hover { background: #f5d060; }
+.btn-outline {
+  padding: 14px 28px; border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px; font-size: 14px; font-weight: 500;
+  color: rgba(255,255,255,0.6); transition: border-color 0.18s, color 0.18s;
+}
+.btn-outline:hover { border-color: rgba(255,255,255,0.5); color: #fff; }
+
+/* ─── FOOTER ─────────────────────────────────────────────────── */
+footer {
+  background: var(--ink); border-top: 1px solid rgba(255,255,255,0.07);
+  padding: 32px 48px; display: flex; justify-content: space-between; align-items: center;
+}
+.footer-logo { font-family: var(--serif); font-size: 18px; color: rgba(255,255,255,0.7); }
+.footer-links { display: flex; gap: 28px; list-style: none; }
+.footer-links a { font-size: 13px; color: rgba(255,255,255,0.3); transition: color 0.18s; }
+.footer-links a:hover { color: rgba(255,255,255,0.7); }
+.footer-copy { font-size: 12px; color: rgba(255,255,255,0.2); }
+
+/* ─── FADE-IN ─────────────────────────────────────────────────── */
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.in { opacity: 1; transform: none; }
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────── */
+@media (max-width: 920px) {
+  nav { padding: 0 20px; }
+  .nav-links { display: none; }
+  .hero { grid-template-columns: 1fr; min-height: auto; }
+  .hero-left { padding: 80px 24px 48px; border-right: none; border-bottom: 1px solid var(--rule); }
+  .hero-right { padding: 48px 24px; }
+  .section { padding: 72px 24px; }
+  .teach-grid { grid-template-columns: 1fr; }
+  .curriculum-header { grid-template-columns: 1fr; gap: 24px; }
+  .pricing-grid { grid-template-columns: 1fr; }
+  .faq-cols { grid-template-columns: 1fr; }
+  .faq-col-head { position: static; margin-bottom: 32px; }
+  .commitment-grid { grid-template-columns: 1fr; }
+  .final-btns { flex-direction: column; }
+  footer { flex-direction: column; gap: 20px; text-align: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">Derive<sup>/</sup></div>
+  <ul class="nav-links">
+    <li><a href="#curriculum">Curriculum</a></li>
+    <li><a href="#teach">How it works</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <a href="#pricing" class="btn-nav">Enroll — $10</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-left-inner">
+      <div class="hero-kicker">For students, engineers, and researchers</div>
+      <h1 class="hero-headline">Finally understand the mathematics behind AI.</h1>
+      <p class="hero-body">From grade 8 to PhD — 8 modules that take you from first principles to transformers. No hand-waving. Every formula explained, derived, and coded from scratch.</p>
+      <div class="hero-actions">
+        <a href="#pricing" class="btn-primary">Enroll today</a>
+        <div class="price-inline"><strong>$10</strong> · one-time · lifetime</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="formula-stage">
+      <div class="margin-note" id="margin-note">why √d_k ?</div>
+      <div class="fs-label" id="fs-label">Module 7 · Transformers</div>
+      <div class="fs-formula" id="fs-formula">Attention(Q,K,V) = softmax(<mark>QKᵀ / √d_k</mark>) · V</div>
+      <div class="fs-annotation" id="fs-annotation">
+        Dividing by √d_k prevents the dot products from growing too large when dimensions are high — which pushes softmax into saturated, near-zero gradient territory. You'll derive this from scratch.
+      </div>
+      <div class="fs-nav">
+        <div class="fs-pip active" data-i="0" onclick="setFormula(0)"></div>
+        <div class="fs-pip" data-i="1" onclick="setFormula(1)"></div>
+        <div class="fs-pip" data-i="2" onclick="setFormula(2)"></div>
+        <div class="fs-pip" data-i="3" onclick="setFormula(3)"></div>
+        <span class="fs-counter" id="fs-counter">1 / 4</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section transform-section" id="transform">
+  <div class="section-inner">
+    <div class="transform-header reveal">
+      <h2 class="section-heading">Who is this for?</h2>
+      <p class="section-sub">Anyone curious about how AI really works — whether you're in school, at university, or already working in the field. The only requirement is curiosity and basic algebra.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:8px">
+      <div class="reveal" style="border:1px solid var(--rule);border-radius:8px;padding:28px 24px;background:var(--white)">
+        <div style="font-size:13px;font-weight:600;color:var(--blue);margin-bottom:12px">Grade 8 – A-levels</div>
+        <strong style="display:block;font-size:15px;color:var(--ink);margin-bottom:8px">Get a real head start</strong>
+        <p style="font-size:14px;color:var(--ink-mid);line-height:1.65">Most students learn that neural networks exist. You'll learn how they actually work — the algebra, the calculus, the logic — before your peers even start university.</p>
+      </div>
+      <div class="reveal" style="border:1px solid var(--rule);border-radius:8px;padding:28px 24px;background:var(--white);transition-delay:0.06s">
+        <div style="font-size:13px;font-weight:600;color:var(--blue);margin-bottom:12px">Undergraduate students</div>
+        <strong style="display:block;font-size:15px;color:var(--ink);margin-bottom:8px">Fill the gap your course leaves</strong>
+        <p style="font-size:14px;color:var(--ink-mid);line-height:1.65">University courses explain <em>what</em> the formulas are. Derive/ explains <em>why</em> they are — and makes you prove each one in code. The two complement each other perfectly.</p>
+      </div>
+      <div class="reveal" style="border:1px solid var(--rule);border-radius:8px;padding:28px 24px;background:var(--white);transition-delay:0.12s">
+        <div style="font-size:13px;font-weight:600;color:var(--blue);margin-bottom:12px">Software engineers</div>
+        <strong style="display:block;font-size:15px;color:var(--ink);margin-bottom:8px">Go from using AI to understanding it</strong>
+        <p style="font-size:14px;color:var(--ink-mid);line-height:1.65">You already build with AI tools. Derive/ gives you the mathematical foundation underneath — so when something breaks, or an interview asks you to explain backprop, you're ready.</p>
+      </div>
+      <div class="reveal" style="border:1px solid var(--rule);border-radius:8px;padding:28px 24px;background:var(--white);transition-delay:0.18s">
+        <div style="font-size:13px;font-weight:600;color:var(--blue);margin-bottom:12px">Postgrads &amp; researchers</div>
+        <strong style="display:block;font-size:15px;color:var(--ink);margin-bottom:8px">Build the intuition, not just the proof</strong>
+        <p style="font-size:14px;color:var(--ink-mid);line-height:1.65">You can read papers. Derive/ helps you feel the geometry behind the algebra — the kind of intuition that makes you better at forming hypotheses, not just verifying them.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section curriculum-section" id="curriculum">
+  <div class="section-inner">
+    <div class="curriculum-header">
+      <div class="reveal">
+        <h2 class="section-heading">8 modules.<br>The complete picture.</h2>
+      </div>
+      <p class="section-sub reveal" style="transition-delay:0.1s">Each module builds on the last. You finish with a complete mathematical picture of how modern AI works — from the first matrix multiply to the final softmax.</p>
+    </div>
+
+    <table class="module-table reveal">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Module</th>
+          <th>Key formula</th>
+          <th>Topics</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="td-num">01</td><td class="td-name">Linear Algebra</td><td class="td-formula">A = UΣVᵀ</td><td class="td-topics">Matrices, SVD, PCA, eigenvectors</td></tr>
+        <tr><td class="td-num">02</td><td class="td-name">Calculus &amp; Autodiff</td><td class="td-formula">∂L/∂W = δᵀ · xᵀ</td><td class="td-topics">Gradients, chain rule, backprop, autograd</td></tr>
+        <tr><td class="td-num">03</td><td class="td-name">Probability &amp; Loss</td><td class="td-formula">L = −Σ y log(p)</td><td class="td-topics">MLE, cross-entropy, KL divergence</td></tr>
+        <tr><td class="td-num">04</td><td class="td-name">Optimisation</td><td class="td-formula">m̂ / (√v̂ + ε)</td><td class="td-topics">SGD, Adam, LR schedules, momentum</td></tr>
+        <tr><td class="td-num">05</td><td class="td-name">Neural Architectures</td><td class="td-formula">σ² = 2/(nᵢₙ + nₒᵤₜ)</td><td class="td-topics">Initialisation, BatchNorm, residuals</td></tr>
+        <tr><td class="td-num">06</td><td class="td-name">CNNs &amp; Vision</td><td class="td-formula">(f * g)[n] = Σ f[k]g[n−k]</td><td class="td-topics">Convolutions, pooling, ResNets</td></tr>
+        <tr><td class="td-num">07</td><td class="td-name">Transformers</td><td class="td-formula">softmax(QKᵀ/√d_k) · V</td><td class="td-topics">Self-attention, positional encoding, BERT</td></tr>
+        <tr><td class="td-num">08</td><td class="td-name">Generative Models</td><td class="td-formula">ELBO = 𝔼[log p(x|z)] − KL</td><td class="td-topics">VAEs, diffusion models, GANs</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section teach-section" id="teach">
+  <div class="section-inner">
+    <div class="teach-grid">
+      <div>
+        <h2 class="section-heading reveal">Not told.<br>Derived.</h2>
+        <p class="section-sub reveal" style="transition-delay:0.08s;margin-top:16px;margin-bottom:36px">Every lesson follows a derivation-first structure. You see the problem, build the intuition, prove the math, then write the code. Click a module to see how it works.</p>
+        <div class="teach-modules" id="teach-modules">
+          <div class="tm-item active" data-mod="0"><span class="tm-num">01</span><span class="tm-name">Linear Algebra — SVD</span></div>
+          <div class="tm-item" data-mod="1"><span class="tm-num">02</span><span class="tm-name">Calculus — Autodiff</span></div>
+          <div class="tm-item" data-mod="2"><span class="tm-num">03</span><span class="tm-name">Probability — Loss</span></div>
+          <div class="tm-item" data-mod="3"><span class="tm-num">07</span><span class="tm-name">Transformers — Attention</span></div>
+        </div>
+      </div>
+
+      <div class="derivation-panel reveal" style="transition-delay:0.12s">
+        <div class="dp-header">
+          <span class="dp-title" id="dp-title">Module 01 · Linear Algebra</span>
+          <span class="dp-badge">Derivation walkthrough</span>
+        </div>
+        <div class="dp-steps" id="dp-steps"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section commitment-section">
+  <div class="section-inner">
+    <div class="reveal">
+      <h2 class="section-heading">Why $10?</h2>
+      <p class="section-sub" style="margin-top:12px">We're just launching — no testimonials yet, and we'd rather be honest about that. Here's what we do commit to.</p>
+    </div>
+    <div class="commitment-grid reveal" style="transition-delay:0.1s">
+      <div class="commitment-item">
+        <div class="ci-icon">📐</div>
+        <div class="ci-heading">The math should not be gatekept by price</div>
+        <p class="ci-body">Every formula in Derive/ exists in public papers and textbooks. What's missing is a course that teaches it the way engineers actually learn — by deriving it, then writing the code. $10 removes price as a barrier entirely.</p>
+      </div>
+      <div class="commitment-item">
+        <div class="ci-icon">🌍</div>
+        <div class="ci-heading">Accessible to every engineer, everywhere</div>
+        <p class="ci-body">A developer in Karachi, Lagos, or Manila has the same curiosity as one in San Francisco. $10 is a coffee, not a commitment. One payment, lifetime access, no subscription, no expiry date.</p>
+      </div>
+      <div class="commitment-item">
+        <div class="ci-icon">↩</div>
+        <div class="ci-heading">30-day money-back, no questions</div>
+        <p class="ci-body">We're new. You're taking a chance. If the content doesn't deliver what this page promises, email us within 30 days and we refund the full $10. No form, no explanation required.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section pricing-section" id="pricing">
+  <div class="section-inner">
+    <div class="reveal">
+      <h2 class="section-heading">Simple pricing.</h2>
+      <p class="section-sub" style="margin-top:12px">Compare what else this knowledge costs.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="comparisons reveal" style="transition-delay:0.05s">
+        <div class="comparison-row"><span class="cr-name">Coursera Deep Learning Spec.</span><span class="cr-price">$399 / yr</span></div>
+        <div class="comparison-row"><span class="cr-name">Typical ML bootcamp</span><span class="cr-price">$1,200 – $3,000</span></div>
+        <div class="comparison-row"><span class="cr-name">University ML course</span><span class="cr-price">$4,000+</span></div>
+        <div class="comparison-row"><span class="cr-name">fast.ai (top-down, no derivations)</span><span class="cr-price">Free</span></div>
+        <div class="comparison-row ours"><span class="cr-name">Derive/ — full derivations, working code</span><span class="cr-price">$10 once</span></div>
+      </div>
+
+      <div class="pricing-card reveal" style="transition-delay:0.12s">
+        <div class="pc-inner">
+          <div class="pc-launch">New launch · launch pricing</div>
+          <div class="pc-price"><span>$</span>10</div>
+          <div class="pc-was">Regular price: <s>$129</s></div>
+          <p class="pc-desc">One payment. All 8 modules. Lifetime access. No subscription, no cohort, no expiry.</p>
+          <div class="pc-features">
+            <div class="pc-feat"><span class="pc-feat-check">✓</span>8 complete modules, derived from first principles</div>
+            <div class="pc-feat"><span class="pc-feat-check">✓</span>60+ step-by-step derivations with annotated code</div>
+            <div class="pc-feat"><span class="pc-feat-check">✓</span>Working Python implementations you write yourself</div>
+            <div class="pc-feat"><span class="pc-feat-check">✓</span>Formula reference sheets for every module</div>
+            <div class="pc-feat"><span class="pc-feat-check">✓</span>Lifetime updates as curriculum expands</div>
+          </div>
+          <a href="#" class="btn-enroll">Enroll for $10</a>
+          <p class="pc-guarantee">30-day money-back guarantee</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section faq-section" id="faq">
+  <div class="section-inner">
+    <div class="faq-cols">
+      <div class="faq-col-head reveal">
+        <h2 class="section-heading">Questions.</h2>
+      </div>
+      <div class="faq-list reveal" style="transition-delay:0.08s" id="faq-list"></div>
+    </div>
+  </div>
+</section>
+
+<section class="final-section">
+  <div class="final-inner">
+    <h2 class="final-h reveal">Understand the AI<br>you work with.</h2>
+    <p class="final-p reveal" style="transition-delay:0.08s">Start Module 1 today. One payment. Work through it at your own pace. Keep it for life.</p>
+    <div class="final-btns reveal" style="transition-delay:0.16s">
+      <a href="#pricing" class="btn-final">Start for $10</a>
+      <a href="#curriculum" class="btn-outline">See all 8 modules</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">Derive/</div>
+  <ul class="footer-links">
+    <li><a href="#curriculum">Curriculum</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="#">Privacy</a></li>
+  </ul>
+  <div class="footer-copy">© 2024 Derive/</div>
+</footer>
+
+<script>
+const formulas = [
+  { label:'Module 7 · Transformers', f:'Attention(Q,K,V) = softmax(<mark>QKᵀ / √d_k</mark>) · V', note:'why √d_k ?', ann:"Dividing by √d_k prevents dot products from growing too large in high dimensions — which pushes softmax into saturated, near-zero gradient territory. You'll prove this from scratch." },
+  { label:'Module 2 · Autodiff', f:'∂L/∂W⁽ˡ⁾ = <mark>(δ⁽ˡ⁾)ᵀ</mark> · x⁽ˡ⁾', note:'chain rule →', ann:"Backpropagation is the chain rule applied recursively across a computation graph. You'll build an autograd engine from scratch — before you ever call .backward()." },
+  { label:'Module 3 · Loss Functions', f:'L = −(1/N) Σᵢ [yᵢ log <mark>p̂ᵢ</mark> + (1−yᵢ) log(1−p̂ᵢ)]', note:'from MLE', ann:"Binary cross-entropy falls directly out of maximum likelihood estimation for Bernoulli outcomes. You'll derive it — not memorise it from a docs page." },
+  { label:'Module 4 · Optimisers', f:'θₜ ← θₜ₋₁ − α · <mark>m̂ₜ / (√v̂ₜ + ε)</mark>', note:'bias correction', ann:"Adam's bias correction prevents early training instability. You'll derive why from the moment estimator's cold-start bias and verify it numerically." }
+];
+
+let cur = 0, timer;
+function setFormula(i) {
+  const fEl = document.getElementById('fs-formula'), aEl = document.getElementById('fs-annotation');
+  fEl.style.opacity = '0'; aEl.style.opacity = '0';
+  setTimeout(() => {
+    cur = i;
+    document.getElementById('fs-label').textContent = formulas[i].label;
+    fEl.innerHTML = formulas[i].f;
+    aEl.textContent = formulas[i].ann;
+    document.getElementById('margin-note').textContent = formulas[i].note;
+    document.getElementById('fs-counter').textContent = `${i+1} / ${formulas.length}`;
+    fEl.style.opacity = '1'; aEl.style.opacity = '1';
+    document.querySelectorAll('.fs-pip').forEach((p, j) => p.classList.toggle('active', j === i));
+  }, 280);
+}
+timer = setInterval(() => setFormula((cur + 1) % formulas.length), 5000);
+document.querySelectorAll('.fs-pip').forEach((p, i) => p.addEventListener('click', () => { clearInterval(timer); setFormula(i); timer = setInterval(() => setFormula((cur + 1) % formulas.length), 5000); }));
+
+const derivations = [
+  { title:'Module 01 · Linear Algebra', steps:[
+    { n:'1', t:'Start with the problem', eq:'A ∈ ℝᵐˣⁿ', p:'We have an arbitrary matrix. We want to factor it into interpretable geometric transforms: stretch, rotate, rotate back.' },
+    { n:'2', t:'Prove AᵀA is symmetric PSD', eq:'AᵀA · v = λv, λ ≥ 0', p:'Any symmetric matrix has real eigenvalues. We prove algebraically that all eigenvalues must be non-negative.' },
+    { n:'3', t:'Construct the decomposition', eq:'A = U Σ Vᵀ', p:'U = left singular vectors, Σ = diagonal of √λᵢ, V = right singular vectors. We build each piece from the eigendecomposition.' },
+    { n:'4', t:'Implement and verify', eq:'np.allclose(U @ S @ Vt, A)  # True', p:'Then use it to implement PCA from scratch — no sklearn, no black box.' },
+  ]},
+  { title:'Module 02 · Calculus & Autodiff', steps:[
+    { n:'1', t:"What is a derivative, really?", eq:"f'(x) = lim(h→0) [f(x+h) − f(x)] / h", p:'Not notation. A limit. We compute numerical gradients first to build physical intuition.' },
+    { n:'2', t:'Chain rule for composed functions', eq:'d/dx f(g(x)) = f\'(g(x)) · g\'(x)', p:'Proved with the substitution definition, then drawn as a directed computation graph.' },
+    { n:'3', t:'Build a Value class in Python', eq:'out._backward = lambda: self.grad += out.grad', p:'Each operation records how to propagate gradients backward. The graph builds itself on the forward pass.' },
+    { n:'4', t:'Match PyTorch to floating-point precision', eq:'abs(our_grad − torch_grad) < 1e-6', p:'Run identical computations in both engines. They agree to machine precision.' },
+  ]},
+  { title:'Module 03 · Probability & Loss', steps:[
+    { n:'1', t:'Model outputs as probabilities', eq:'P(y=1 | x; θ) = σ(wᵀx + b)', p:"We interpret the model's output as a claim about the probability of each label." },
+    { n:'2', t:'Maximum likelihood estimation', eq:'argmax_θ  Π P(yᵢ | xᵢ; θ)', p:"We want parameters that make the observed data most probable. Log-transform converts the product to a sum." },
+    { n:'3', t:'Derive cross-entropy from MLE', eq:'L = −Σ yᵢ log p̂ᵢ + (1−yᵢ) log(1−p̂ᵢ)', p:'Cross-entropy is not a design choice. It falls out of MLE for Bernoulli outcomes — this is why it works.' },
+    { n:'4', t:'Derive the gradient analytically', eq:'∂L/∂w = (1/N) Σ (p̂ᵢ − yᵢ) xᵢ', p:'Clean, symmetric, interpretable. Implement it and train a classifier without any ML library.' },
+  ]},
+  { title:'Module 07 · Transformers', steps:[
+    { n:'1', t:'The problem with fixed context', eq:null, p:'RNNs process left-to-right and forget. We want every token to attend directly to every other token, weighted by relevance.' },
+    { n:'2', t:'Derive the scaling factor', eq:'Var(qᵀk) = d_k  →  divide by √d_k', p:'Without scaling, dot products grow with dimension and push softmax into saturation. We prove the variance argument.' },
+    { n:'3', t:'Compute attention weights', eq:'α = softmax(QKᵀ / √d_k)', p:'Each row of α is a probability distribution over positions. We implement masked attention for autoregressive decoding.' },
+    { n:'4', t:'Multi-head attention', eq:'MultiHead = Concat(head₁,…,headₕ) Wᴼ', p:'Different heads learn different relationship types. We prove this is expressively equivalent to a single wider attention.' },
+  ]},
+];
+
+function renderDerivation(i) {
+  const d = derivations[i];
+  document.getElementById('dp-title').textContent = d.title;
+  const container = document.getElementById('dp-steps');
+  container.innerHTML = d.steps.map((s, j) => `
+    <div class="dp-step" id="ds${j}">
+      <div class="dp-step-num">${s.n}</div>
+      <div class="dp-step-body">
+        <div class="dp-step-title">${s.t}</div>
+        ${s.eq ? `<div class="dp-eq">${s.eq}</div>` : ''}
+        <p>${s.p}</p>
+      </div>
+    </div>`).join('');
+  d.steps.forEach((_, j) => setTimeout(() => { const el = document.getElementById(`ds${j}`); if (el) el.classList.add('in'); }, 60 * j));
+}
+
+document.getElementById('teach-modules').querySelectorAll('.tm-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.tm-item').forEach(m => m.classList.remove('active'));
+    item.classList.add('active');
+    renderDerivation(+item.dataset.mod);
+  });
+});
+renderDerivation(0);
+
+const faqs = [
+  { q:'How is this different from fast.ai or Coursera?', a:"fast.ai is deliberately top-down: run code first, understand later. Coursera is broad. Derive/ has one job — every formula is derived from first principles, then implemented in code. If you want to know why attention uses √d_k — with a proof — you'll find it here and nowhere else at this price." },
+  { q:'What background do I need?', a:"For grade 8 and above: basic algebra and curiosity. For the later modules (optimisers, transformers), some exposure to calculus helps but is not required — we build the intuition before the formulas. Engineers and researchers will move faster through the early modules and find the depth increases quickly." },
+  { q:'How long does it take?', a:"Each module is 4–6 hours of focused work. All 8 modules is roughly 40 hours total. Most people take one module per week alongside their job. There's no cohort, no deadline, no expiry date." },
+  { q:"Why only $10? What's the catch?", a:"No catch. $10 means anyone can afford it — a student in Lagos or a junior engineer in Manila should not be priced out of understanding their own tools. The content is more rigorous than courses that cost 100× as much. The price just doesn't reflect that." },
+  { q:"What if it's not what I expected?", a:"30-day money-back guarantee. Email us, no explanation needed, full $10 refunded." },
+];
+
+document.getElementById('faq-list').innerHTML = faqs.map((f, i) => `
+  <div class="faq-item" id="fi${i}">
+    <button class="faq-q" onclick="toggleFaq(${i})"><span>${f.q}</span><div class="faq-icon">+</div></button>
+    <div class="faq-a"><div class="faq-a-body">${f.a}</div></div>
+  </div>`).join('');
+
+function toggleFaq(i) {
+  const el = document.getElementById(`fi${i}`), was = el.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(x => x.classList.remove('open'));
+  if (!was) el.classList.add('open');
+}
+
+const io = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

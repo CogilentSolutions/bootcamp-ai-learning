@@ -1,0 +1,21 @@
+# Instructor site Netlify config
+# Use this when deploying instructor/ as a SEPARATE private Netlify site.
+# Steps:
+#   1. netlify sites:create --name derive-instructor (or use the UI)
+#   2. netlify deploy --dir=instructor --prod --config=netlify.instructor.toml
+# Keep this site's URL private — share only with co-instructors.
+
+[build]
+  publish = "instructor"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
