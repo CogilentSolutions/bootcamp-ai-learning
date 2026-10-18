@@ -1,164 +1,156 @@
-# Derive — The Machine Learning Fundamentals Course
+# Bootcamp: AI & Machine Learning Fundamentals
 
-A self-contained HTML/CSS/JS course with:
-- **Student site** (`student/`) — clean course, no instructor content
-- **Instructor site** (`instructor/`) — same course + yellow instructor notes, password-gated
-- **Marketing site** (`marketing/`) — landing page
-- **Shared source** (`shared/`) — canonical course content
+**A Brightspyre Bootcamps program** · [brightspyre.com](https://brightspyre.com)
+
+A self-contained, derivation-first ML course delivered as a single HTML page. No frameworks, no build tools, no dependencies — just open the file and learn.
+
+---
+
+## What this bootcamp covers
+
+8 modules that take students from first principles to transformers. Every formula is derived from scratch, then implemented in code.
+
+| Module | Topic | Key formula |
+|--------|-------|-------------|
+| 01 | Linear Algebra for AI | A = UΣVᵀ |
+| 02 | Calculus & Autodiff | ∂L/∂W = δᵀ · xᵀ |
+| 03 | Probability & Loss Functions | L = −Σ y log(p) |
+| 04 | Optimisation & Gradient Descent | m̂ / (√v̂ + ε) |
+| 05 | Neural Architectures | σ² = 2/(nᵢₙ + nₒᵤₜ) |
+| 06 | CNNs & Vision | (f * g)[n] = Σ f[k]g[n−k] |
+| 07 | Transformers & Attention | softmax(QKᵀ/√d_k) · V |
+| 08 | LLMs, RAG & Agents | ELBO = 𝔼[log p(x|z)] − KL |
 
 ---
 
 ## Repo structure
 
 ```
-derive-course/
+bootcamp-ai-learning/
 ├── student/
-│   └── index.html          # Full course, student-facing (285 KB)
+│   └── index.html          # Student-facing course (285 KB, no instructor content)
 ├── instructor/
-│   └── index.html          # Full course + instructor notes, password-gated (314 KB)
+│   └── index.html          # Same course + instructor notes, password-gated (314 KB)
 ├── marketing/
-│   └── index.html          # Chalk & Paper landing page
+│   └── index.html          # Brightspyre Bootcamps landing page
 ├── shared/
-│   ├── course_content.html # Canonical full source (master copy)
-│   └── body_content.html   # Extracted body (used by build scripts)
-├── netlify.toml            # Student site deploy config
-├── netlify.instructor.toml # Instructor site deploy config (separate site)
+│   ├── course_content.html # Canonical course source (master copy)
+│   └── body_content.html   # Extracted body used by build scripts
+├── netlify.toml            # Student site Netlify deploy config
+├── netlify.instructor.toml # Instructor site Netlify deploy config
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml      # GitHub Actions: auto-deploy student on push to main
+│       └── deploy.yml      # Auto-deploy student site on push to main
 └── README.md
 ```
 
 ---
 
-## Quick deploy (Netlify)
+## Deploy: GitHub Pages (student site)
 
-### Student site (public)
+### One-time setup
 
 ```bash
-# One-time: install Netlify CLI
-npm install -g netlify-cli
-
-# Deploy student site
-netlify deploy --dir=student --prod
+# 1. Add CNAME for custom domain
+echo "mathematics-ai.brightspyre.com" > student/CNAME
+git add student/CNAME
+git commit -m "Add CNAME for GitHub Pages"
+git push
 ```
 
-Or connect the repo to Netlify via the UI → set **Publish directory** to `student`.
+### Enable GitHub Pages in repo settings
 
-### Instructor site (private)
+1. Go to **Settings → Pages**
+2. Source: **Deploy from a branch**
+3. Branch: `main` / Folder: `/student` → **Save**
+4. Custom domain: `mathematics-ai.brightspyre.com` → **Save**
+
+### DNS record (at brightspyre.com DNS provider)
+
+| Type | Name | Value |
+|------|------|-------|
+| CNAME | `mathematics-ai` | `cogilentsolutions.github.io` |
+
+> If using Cloudflare: set proxy to **DNS only** (grey cloud).
+
+### Enable HTTPS
+
+After DNS propagates (5–30 min), go back to **Settings → Pages** and tick **Enforce HTTPS**.
+
+Site will be live at: **https://mathematics-ai.brightspyre.com**
+
+---
+
+## Deploy: Instructor site (private)
+
+The instructor site must be deployed separately and kept private. Never deploy it to the public GitHub Pages site.
 
 ```bash
-# Create a separate Netlify site for instructors only
-netlify sites:create --name your-course-instructor
-
-# Deploy
+npm install -g netlify-cli
+netlify login
 netlify deploy --dir=instructor --prod --config=netlify.instructor.toml
 ```
 
-Keep the instructor URL private. Do **not** link to it from the student site.
+Share the Netlify URL only with bootcamp instructors.
 
 ---
 
-## GitHub Pages (alternative)
+## Instructor password
+
+The instructor site uses a SHA-256 hash. To set a real password:
 
 ```bash
-# Deploy student site to GitHub Pages
-git subtree push --prefix student origin gh-pages
-```
-
-Then in repo Settings → Pages → set source branch to `gh-pages`, root `/`.
-
----
-
-## Changing the instructor password
-
-The instructor site uses a SHA-256 hash stored in `instructor/index.html`.
-
-To set a new password:
-
-```bash
-# Generate hash (Node.js)
 node -e "
 const crypto = require('crypto');
-const pw = 'your-new-password';
-const hash = crypto.createHash('sha256').update(pw).digest('hex');
+const hash = crypto.createHash('sha256').update('your-password').digest('hex');
 console.log(hash);
 "
 ```
 
-Then in `instructor/index.html`, find and replace:
-
+In `instructor/index.html`, replace:
 ```js
 const CORRECT_HASH = 'PASTE_YOUR_HASH_HERE';
 ```
 
 Commit and redeploy.
 
-**Default demo password:** any string ≥ 6 characters (replace before real use).
-
----
-
-## Adding/editing instructor notes
-
-Instructor notes are `.instr-note` divs in `instructor/index.html`. Each follows this pattern:
-
-```html
-<div class="instr-note">
-  <div class="instr-note-header">
-    <span class="badge">Instructor</span>
-    <span><strong>L21</strong> — ⏱ 90 min  Goal text</span>
-    <span class="toggle-icon">▾</span>
-  </div>
-  <div class="instr-note-body">
-    <h4>🎣 Opening hook</h4>
-    <ul><li>...</li></ul>
-    <h4>⚠️ Common student mistakes</h4>
-    <ul><li>...</li></ul>
-    <h4>💬 Discussion prompt</h4>
-    <p>...</p>
-    <h4>✂️ What to skip</h4>
-    <p>...</p>
-  </div>
-</div>
-```
-
-Notes appear immediately after each `<div class="lesson-header">` block.
-
 ---
 
 ## Student features
 
-- **Scroll progress bar** — top of page, tracks reading progress
-- **Lesson completion checkboxes** — click the circle next to each lesson title; state persists in `localStorage` (key: `derive_done_v1`)
-- **Copy-to-clipboard** — all code blocks get a copy button automatically
-- **TOC drawer** — top-right hamburger opens a full table of contents with active-section highlighting
-
----
+- Scroll progress bar
+- Lesson completion checkboxes (saved in browser `localStorage`)
+- Copy-to-clipboard on all code blocks
+- Sticky table of contents with active-section highlighting
 
 ## Instructor features
 
-- **Password gate** — SHA-256 checked client-side; session persists via `sessionStorage`
-- **Instructor banner** — sticky yellow bar; "Hide All Notes" toggle
-- **Per-lesson notes** — collapsible panels with: opening hook, common mistakes, discussion prompt, what to skip
-- **Dark mode** — instructor note colors adapt automatically
+- SHA-256 password gate (session persists across page reloads)
+- Sticky instructor banner with "Hide All Notes" toggle
+- Per-lesson collapsible panels: opening hook · common mistakes · discussion prompt · what to skip
+- Dark mode support
 
 ---
 
 ## Updating course content
 
-The source of truth is `shared/course_content.html`. After editing it:
+The source of truth is `shared/course_content.html`. After editing:
 
-```bash
-python3 scripts/rebuild.py   # (if added) re-extracts body and rebuilds student/instructor HTML
-```
-
-Or manually:
 1. Edit `shared/course_content.html`
-2. Re-run the Python extraction + injection script (see build notes in `shared/`)
-3. Commit both student and instructor HTML
+2. Run the rebuild script to update student and instructor HTML
+3. `git add -A && git commit -m "Update course content" && git push`
+
+GitHub Actions automatically deploys the student site on every push to `main`.
 
 ---
 
-## License
+## About Brightspyre Bootcamps
 
-Course content © Derive / Chalk & Paper. All rights reserved.
+Brightspyre runs intensive, practical bootcamps for engineers and students who want to go beyond surface-level AI knowledge. This bootcamp is designed for anyone from A-level students to working engineers — the only prerequisite is curiosity and basic algebra.
+
+**Website:** [brightspyre.com](https://brightspyre.com)  
+**Contact:** hello@brightspyre.com
+
+---
+
+© Brightspyre Bootcamps. All rights reserved.
